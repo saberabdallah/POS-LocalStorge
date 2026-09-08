@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام نقطة البيع والمخزون</title>
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+    <!-- الشريط العلوي -->
+    <header class="main-header">
+        <div class="logo">
+            <i class="fa-solid fa-cash-register"></i>
+            <h1>نظام المبيعات والمخزون</h1>
+        </div>
+        <div class="header-actions">
+            <button id="export-backup-btn" class="btn btn-backup">
+                <i class="fa-solid fa-download"></i> تصدير نسخة
+            </button>
+            <button id="import-backup-btn" class="btn btn-restore">
+                <i class="fa-solid fa-upload"></i> استرجاع نسخة
+            </button>
+            <!-- input خفي لرفع ملف النسخة الاحتياطية -->
+            <input type="file" id="import-file-input" accept=".json" style="display: none;">
+
+            <button id="open-product-modal-btn" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> إضافة منتج جديد
+            </button>
+            <button id="manage-products-btn" class="btn btn-secondary">
+                <i class="fa-solid fa-boxes-stacked"></i> إدارة المنتجات والمخزون
+            </button>
+        </div>
+    </header>
+
+    <!-- حاوية النظام الرئيسية -->
+    <div class="pos-container">
+        
+        <!-- قسم البحث وعرض المنتجات (شاشة البيع) -->
+        <main class="products-section">
+            <div class="search-bar">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="search-input" placeholder="ابحث باسم المنتج أو الرقم (ID)...">
+            </div>
+
+            <div class="products-grid" id="products-grid">
+                <!-- يُعرض ديناميكياً -->
+            </div>
+        </main>
+
+        <!-- قسم سلة المشتريات -->
+        <aside class="cart-section">
+            <div class="cart-header">
+                <h2><i class="fa-solid fa-cart-shopping"></i> سلة المشتريات</h2>
+                <button id="clear-cart-btn" class="btn btn-danger-outline btn-sm">
+                    <i class="fa-solid fa-trash"></i> تفريغ السلة
+                </button>
+            </div>
+
+            <div class="cart-items" id="cart-items">
+                <!-- يُعرض ديناميكياً -->
+            </div>
+
+            <div class="cart-summary">
+                <div class="customer-input-group">
+                    <label for="customer-name"><i class="fa-solid fa-user"></i> اسم العميل <span class="required">*</span></label>
+                    <input type="text" id="customer-name" placeholder="أدخل اسم العميل..." required>
+                </div>
+
+                <div class="customer-input-group">
+                    <label for="payment-type"><i class="fa-solid fa-wallet"></i> نوع الفاتورة <span class="required">*</span></label>
+                    <select id="payment-type" class="form-select" required>
+                        <option value="">-- اختر نوع الفاتورة --</option>
+                        <option value="نقدي">نقدي</option>
+                        <option value="آجل">آجل</option>
+                    </select>
+                </div>
+
+                <div class="summary-row">
+                    <span>عدد أصناف المشتريات:</span>
+                    <span id="summary-unique-items">0</span>
+                </div>
+                <div class="summary-row">
+                    <span>إجمالي القطع:</span>
+                    <span id="summary-total-qty">0</span>
+                </div>
+                <div class="summary-row total-row">
+                    <span>المجموع النهائي:</span>
+                    <span id="summary-total-price">0 ريال</span>
+                </div>
+
+                <button id="checkout-btn" class="btn btn-primary btn-block">
+                    <i class="fa-solid fa-file-invoice"></i> إتمام البيع وطباعة الفاتورة
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- نافذة إضافة / تعديل منتج -->
+    <div class="modal" id="product-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">إضافة منتج جديد</h3>
+                <span class="close-btn" id="close-modal-btn">&times;</span>
+            </div>
+            <form id="product-form">
+                <input type="hidden" id="product-edit-id">
+
+                <div class="form-group">
+                    <label for="product-name">اسم المنتج <span class="required">*</span></label>
+                    <input type="text" id="product-name" required placeholder="مثال: مياه معدنية">
+                </div>
+
+                <div class="form-group">
+                    <label for="product-price">السعر <span class="required">*</span></label>
+                    <input type="number" id="product-price" min="0" step="any" required placeholder="مثال: 500">
+                </div>
+
+                <div class="form-group">
+                    <label for="product-quantity">الكمية في المخزون <span class="required">*</span></label>
+                    <input type="number" id="product-quantity" min="0" required placeholder="مثال: 50">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" id="save-product-btn">حفظ المنتج</button>
+                    <button type="button" class="btn btn-secondary" id="cancel-modal-btn">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة مخزون سريع للمنتج -->
+    <div class="modal" id="add-stock-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>إضافة مخزون للمنتج</h3>
+                <span class="close-btn" id="close-stock-modal-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p id="stock-product-name" style="font-weight: bold; font-size: 1.1rem; margin-bottom: 10px;"></p>
+                <p id="stock-current-count" style="color: #666; margin-bottom: 15px;"></p>
+                <div class="form-group">
+                    <label for="add-stock-input">الكمية المراد إضافتها للمخزون:</label>
+                    <input type="number" id="add-stock-input" min="1" value="1" style="width: 100%; padding: 10px;">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="confirm-add-stock-btn" class="btn btn-success">إضافة للمخزون</button>
+                    <button type="button" id="cancel-stock-modal-btn" class="btn btn-secondary">إلغاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إدارة المنتجات والفلترة -->
+    <div class="modal" id="manage-modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>إدارة المنتجات والمخزون</h3>
+                <span class="close-btn" id="close-manage-modal-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="manage-filter-bar">
+                    <div class="filter-input-wrap">
+                        <i class="fa-solid fa-magnifying-glass filter-icon"></i>
+                        <input type="text" id="manage-search-input" placeholder="ابحث باسم المنتج أو الرقم (ID)...">
+                    </div>
+                    <div class="filter-select-wrap">
+                        <select id="manage-stock-filter" class="form-select">
+                            <option value="all">جميع الحالات</option>
+                            <option value="in-stock">المتوفر فقط</option>
+                            <option value="out-of-stock">المنتهي من المخزون</option>
+                        </select>
+                    </div>
+                </div>
+
+                <table class="products-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>اسم المنتج</th>
+                            <th>السعر</th>
+                            <th>المخزون</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="manage-table-body">
+                        <!-- يُعرض ديناميكياً -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- حاوية الإشعارات -->
+    <div id="toast-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
