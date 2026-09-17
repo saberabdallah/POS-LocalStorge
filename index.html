@@ -24,14 +24,17 @@
             <button id="import-backup-btn" class="btn btn-restore">
                 <i class="fa-solid fa-upload"></i> استرجاع نسخة
             </button>
-            <!-- input خفي لرفع ملف النسخة الاحتياطية -->
             <input type="file" id="import-file-input" accept=".json" style="display: none;">
+
+            <button id="open-history-btn" class="btn btn-secondary" style="background-color: #34495e;">
+                <i class="fa-solid fa-clock-rotate-left"></i> سجل الفواتير
+            </button>
 
             <button id="open-product-modal-btn" class="btn btn-primary">
                 <i class="fa-solid fa-plus"></i> إضافة منتج جديد
             </button>
             <button id="manage-products-btn" class="btn btn-secondary">
-                <i class="fa-solid fa-boxes-stacked"></i> إدارة المنتجات والمخزون
+                <i class="fa-solid fa-boxes-stacked"></i> إدارة المنتجات
             </button>
         </div>
     </header>
@@ -39,7 +42,7 @@
     <!-- حاوية النظام الرئيسية -->
     <div class="pos-container">
         
-        <!-- قسم البحث وعرض المنتجات (شاشة البيع) -->
+        <!-- قسم البحث وعرض المنتجات -->
         <main class="products-section">
             <div class="search-bar">
                 <i class="fa-solid fa-magnifying-glass search-icon"></i>
@@ -56,7 +59,7 @@
             <div class="cart-header">
                 <h2><i class="fa-solid fa-cart-shopping"></i> سلة المشتريات</h2>
                 <button id="clear-cart-btn" class="btn btn-danger-outline btn-sm">
-                    <i class="fa-solid fa-trash"></i> تفريغ السلة
+                    <i class="fa-solid fa-trash"></i> تفريغ
                 </button>
             </div>
 
@@ -93,7 +96,7 @@
                 </div>
 
                 <button id="checkout-btn" class="btn btn-primary btn-block">
-                    <i class="fa-solid fa-file-invoice"></i> إتمام البيع وطباعة الفاتورة
+                    <i class="fa-solid fa-file-invoice"></i> إتمام البيع 
                 </button>
             </div>
         </aside>
@@ -120,7 +123,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="product-quantity">الكمية في المخزون <span class="required">*</span></label>
+                    <label for="product-quantity">الكمية المتوفرة <span class="required">*</span></label>
                     <input type="number" id="product-quantity" min="0" required placeholder="مثال: 50">
                 </div>
 
@@ -132,33 +135,11 @@
         </div>
     </div>
 
-    <!-- نافذة إضافة مخزون سريع للمنتج -->
-    <div class="modal" id="add-stock-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>إضافة مخزون للمنتج</h3>
-                <span class="close-btn" id="close-stock-modal-btn">&times;</span>
-            </div>
-            <div class="modal-body">
-                <p id="stock-product-name" style="font-weight: bold; font-size: 1.1rem; margin-bottom: 10px;"></p>
-                <p id="stock-current-count" style="color: #666; margin-bottom: 15px;"></p>
-                <div class="form-group">
-                    <label for="add-stock-input">الكمية المراد إضافتها للمخزون:</label>
-                    <input type="number" id="add-stock-input" min="1" value="1" style="width: 100%; padding: 10px;">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" id="confirm-add-stock-btn" class="btn btn-success">إضافة للمخزون</button>
-                    <button type="button" id="cancel-stock-modal-btn" class="btn btn-secondary">إلغاء</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- نافذة إدارة المنتجات والفلترة -->
+    <!-- نافذة إدارة المنتجات -->
     <div class="modal" id="manage-modal">
         <div class="modal-content modal-large">
             <div class="modal-header">
-                <h3>إدارة المنتجات والمخزون</h3>
+                <h3>إدارة المنتجات</h3>
                 <span class="close-btn" id="close-manage-modal-btn">&times;</span>
             </div>
             <div class="modal-body">
@@ -171,7 +152,7 @@
                         <select id="manage-stock-filter" class="form-select">
                             <option value="all">جميع الحالات</option>
                             <option value="in-stock">المتوفر فقط</option>
-                            <option value="out-of-stock">المنتهي من المخزون</option>
+                            <option value="out-of-stock">المنتهي</option>
                         </select>
                     </div>
                 </div>
@@ -182,11 +163,37 @@
                             <th>ID</th>
                             <th>اسم المنتج</th>
                             <th>السعر</th>
-                            <th>المخزون</th>
+                            <th>الكمية</th>
                             <th>الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody id="manage-table-body">
+                        <!-- يُعرض ديناميكياً -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة سجل الفواتير -->
+    <div class="modal" id="history-modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-clock-rotate-left"></i> سجل الفواتير (آخر 48 ساعة)</h3>
+                <span class="close-btn" id="close-history-modal-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <table class="products-table">
+                    <thead>
+                        <tr>
+                            <th>رقم الفاتورة</th>
+                            <th>اسم العميل</th>
+                            <th>التاريخ والوقت</th>
+                            <th>الإجمالي</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body">
                         <!-- يُعرض ديناميكياً -->
                     </tbody>
                 </table>
