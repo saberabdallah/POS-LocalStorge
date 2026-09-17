@@ -486,12 +486,12 @@ function printInvoicePDF(invoiceObj) {
             <div class="summary-container">
                 <div class="summary-box">
                     <div class="summary-row">
-                        <span>إجمالي عدد القطع:</span>
+                        <span>إجمالي عدد القطع :</span>
                         <span>${invoiceObj.totalQty}</span>
                     </div>
                     <div class="summary-total">
-                        <span> الأجمالي:</span>
-                        <span>${invoiceObj.totalPrice.toLocaleString()} ريال</span>
+                        <span> الأجمالي</span>
+                        <span>${invoiceObj.totalPrice.toLocaleString()}   ريال</span>
                     </div>
                 </div>
             </div>
